@@ -10,7 +10,26 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+
+
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.EncoderConfig;
+
+
+import com.studica.frc.AHRS;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -31,13 +50,20 @@ import frc.robot.Constants.OperatorConstants;
 
 public class SwerveModule extends SubsystemBase {
   // Stuff here
-  private CANSparkMax driveMotor;
+  private SparkMax driveMotor;
+  private SparkMaxConfig configDriveMotor;
+  private SparkClosedLoopController driveMotorPIDController;
+  private RelativeEncoder relativeDriveEncoder;
+
+  private EncoderConfig encoderConfigRelativeDrive;
+
+
   private CANSparkMax twistMotor;
   private RelativeEncoder relativeTwistEncoder;
   private DutyCycleEncoder absoluteTwistEncoder;
-  private RelativeEncoder relativeDriveEncoder;
+
   private SparkPIDController twistMotorPIDCOntroller;
-  private SparkPIDController driveMotorPIDCOntroller;
+
 
   private double wheelCirc = (3.58 * 0.0254) * Math.PI;
   private double wheelCircMeters = 4.5 *0.0254;
@@ -45,9 +71,11 @@ public class SwerveModule extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public SwerveModule(int driveMotorCANID, int twistMotorCANID, int absoluteTwistEncoderPort, double absoluteEncoderOffset, boolean driveInvert, boolean twistInvert) {
     //Drive Motor
-    this.driveMotor = new CANSparkMax(driveMotorCANID, MotorType.kBrushless);
+    this.driveMotor = new SparkMax(driveMotorCANID, MotorType.kBrushless);
+    this.driveMotor.configure(null, null, null);
     this.driveMotor.setInverted(driveInvert);
     this.driveMotor.setSmartCurrentLimit(OperatorConstants.AMPLimitDrive);
+    this.driveMotor.
  
     //driveMotor.setClosedLoopRampRate(twistMotorCANID);
     //driveMotor.setIdleMode(null);
@@ -72,12 +100,13 @@ public class SwerveModule extends SubsystemBase {
     // relative drive encoder
     this.relativeDriveEncoder = driveMotor.getEncoder(); 
     relativeDriveEncoder.setPositionConversionFactor(OperatorConstants.driveMotorFactor);
+    relativeDriveEncoder.
     relativeDriveEncoder.setVelocityConversionFactor(OperatorConstants.driveMotorVelocityFactor);
     //relativeDriveEncoder.setMeasurementPeriod(42);
     //relativeDriveEncoder.setAverageDepth();
 
     this.twistMotorPIDCOntroller = twistMotor.getPIDController();
-    this.driveMotorPIDCOntroller = driveMotor.getPIDController();
+    this.driveMotorPIDController = driveMotor.getClosedLoopController();
     //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
     configPID();
   }
@@ -126,22 +155,22 @@ public class SwerveModule extends SubsystemBase {
       if (Math.abs(speed) < 0.1){
           twistMotorPIDCOntroller.setReference(currentAngle, CANSparkMax.ControlType.kPosition);
           //driveMotor.set(speed);
-          driveMotorPIDCOntroller.setReference(desiredModRPM, CANSparkBase.ControlType.kVelocity);
+          driveMotorPIDController.setReference(desiredModRPM, CANSparkBase.ControlType.kVelocity);
       } else {
           twistMotorPIDCOntroller.setReference(angleSubtractor(currentAngle, setPointAngle), CANSparkMax.ControlType.kPosition);
           //driveMotor.set(speed);
-          driveMotorPIDCOntroller.setReference(desiredModRPM, CANSparkBase.ControlType.kVelocity);
+          driveMotorPIDController.setReference(desiredModRPM, CANSparkBase.ControlType.kVelocity);
       }
     } else {
       //System.out.println("flipped angle is smaller or equal");
       if (Math.abs(speed) < 0.1){
           twistMotorPIDCOntroller.setReference(currentAngle, CANSparkMax.ControlType.kPosition);
           //driveMotor.set(-1 * speed);
-          driveMotorPIDCOntroller.setReference(-desiredModRPM, CANSparkBase.ControlType.kVelocity);
+          driveMotorPIDController.setReference(-desiredModRPM, CANSparkBase.ControlType.kVelocity);
       } else {
           twistMotorPIDCOntroller.setReference(angleSubtractor(currentAngle, setPointAngleFlipped), CANSparkMax.ControlType.kPosition);
           //driveMotor.set(-1 * speed);
-          driveMotorPIDCOntroller.setReference(-desiredModRPM, CANSparkBase.ControlType.kVelocity);
+          driveMotorPIDController.setReference(-desiredModRPM, CANSparkBase.ControlType.kVelocity);
       }
     } 
 
@@ -181,10 +210,10 @@ public class SwerveModule extends SubsystemBase {
   }   
 
   private void configPID(){
-    driveMotorPIDCOntroller.setP(OperatorConstants.driveMotorP);
-    driveMotorPIDCOntroller.setI(OperatorConstants.driveMotorI);
-    driveMotorPIDCOntroller.setD(OperatorConstants.driveMotorD);
-    driveMotorPIDCOntroller.setFF(OperatorConstants.driveMotorFF);
+    driveMotorPIDController.setP(OperatorConstants.driveMotorP);
+    driveMotorPIDController.setI(OperatorConstants.driveMotorI);
+    driveMotorPIDController.setD(OperatorConstants.driveMotorD);
+    driveMotorPIDController.setFF(OperatorConstants.driveMotorFF);
  
     twistMotorPIDCOntroller.setP(OperatorConstants.twistMotorP);
     twistMotorPIDCOntroller.setI(OperatorConstants.twistMotorI);

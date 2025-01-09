@@ -16,6 +16,11 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import java.util.function.DoubleSupplier;
 
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel;
+
+
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkBase.ControlType;

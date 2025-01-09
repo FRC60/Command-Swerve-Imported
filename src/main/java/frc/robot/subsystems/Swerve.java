@@ -6,7 +6,8 @@ package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
+import com.studica.frc.jni.AHRSJNI;
 
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -59,7 +60,8 @@ public class Swerve extends SubsystemBase {
   }
   
   // ***
-  AHRS gyro = new AHRS(SPI.Port.kMXP);
+  //AHRS gyro = new AHRS(SPI.Port.kMXP);
+  AHRS gyro = new AHRS(comType)
   double yawOffset = 0;
 
   // ***
