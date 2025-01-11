@@ -25,6 +25,7 @@ import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel;
 import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.EncoderConfig;
 
 
@@ -72,14 +73,34 @@ public class SwerveModule extends SubsystemBase {
   public SwerveModule(int driveMotorCANID, int twistMotorCANID, int absoluteTwistEncoderPort, double absoluteEncoderOffset, boolean driveInvert, boolean twistInvert) {
     //Drive Motor
     this.driveMotor = new SparkMax(driveMotorCANID, MotorType.kBrushless);
-    this.driveMotor.configure(null, null, null);
+    
     this.driveMotor.setInverted(driveInvert);
     this.driveMotor.setSmartCurrentLimit(OperatorConstants.AMPLimitDrive);
-    this.driveMotor.
+    //this.driveMotor.
+
+    this.driveMotorPIDController = driveMotor.getClosedLoopController();
+    //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
  
     //driveMotor.setClosedLoopRampRate(twistMotorCANID);
     //driveMotor.setIdleMode(null);
+
+    // relative drive encoder
+    this.relativeDriveEncoder = driveMotor.getEncoder(); 
+    
+
+    configDriveMotor = new SparkMaxConfig();
+    configDriveMotor
+      .inverted(driveInvert)
+      .smartCurrentLimit(OperatorConstants.AMPLimitDrive);
+    configDriveMotor.encoder
+      .positionConversionFactor(OperatorConstants.driveMotorFactor)
+      .velocityConversionFactor(OperatorConstants.driveMotorVelocityFactor);
    
+    configPID();
+
+    driveMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+
     // Twist Motor
     this.twistMotor = new CANSparkMax(twistMotorCANID, MotorType.kBrushless);
     twistMotor.setInverted(twistInvert);
@@ -97,18 +118,11 @@ public class SwerveModule extends SubsystemBase {
     // Sets twist encoder to correct angle based on absolute zero
     zeroEncoder(absoluteEncoderOffset);
 
-    // relative drive encoder
-    this.relativeDriveEncoder = driveMotor.getEncoder(); 
-    relativeDriveEncoder.setPositionConversionFactor(OperatorConstants.driveMotorFactor);
-    relativeDriveEncoder.
-    relativeDriveEncoder.setVelocityConversionFactor(OperatorConstants.driveMotorVelocityFactor);
-    //relativeDriveEncoder.setMeasurementPeriod(42);
-    //relativeDriveEncoder.setAverageDepth();
+
 
     this.twistMotorPIDCOntroller = twistMotor.getPIDController();
-    this.driveMotorPIDController = driveMotor.getClosedLoopController();
-    //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
-    configPID();
+
+
   }
 
   // RPM to Meters per Second
@@ -210,10 +224,8 @@ public class SwerveModule extends SubsystemBase {
   }   
 
   private void configPID(){
-    driveMotorPIDController.setP(OperatorConstants.driveMotorP);
-    driveMotorPIDController.setI(OperatorConstants.driveMotorI);
-    driveMotorPIDController.setD(OperatorConstants.driveMotorD);
-    driveMotorPIDController.setFF(OperatorConstants.driveMotorFF);
+    configDriveMotor.closedLoop
+      .pidf(OperatorConstants.driveMotorP, OperatorConstants.driveMotorI, OperatorConstants.driveMotorD, OperatorConstants.driveMotorFF);
  
     twistMotorPIDCOntroller.setP(OperatorConstants.twistMotorP);
     twistMotorPIDCOntroller.setI(OperatorConstants.twistMotorI);
