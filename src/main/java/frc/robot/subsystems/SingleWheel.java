@@ -10,50 +10,59 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.revrobotics.CANSparkMax;
+
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+
+
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.EncoderConfig;
+
+
+
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import java.util.function.DoubleSupplier;
 
-import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkLowLevel;
-
-
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
 import frc.robot.Constants.OperatorConstants;
 
 public class SingleWheel extends SubsystemBase {
-  private CANSparkMax motor;
-  private SparkPIDController singleMotorPID;
+  private SparkMax motor;
+  private SparkMaxConfig configMotor;
+  private SparkClosedLoopController singleMotorPID;
   private RelativeEncoder encoder;
 
 
   /** Creates a new ExampleSubsystem. */
   public SingleWheel() {
-    this.motor = new CANSparkMax(9, MotorType.kBrushless);
-    this.motor.setSmartCurrentLimit(OperatorConstants.AMPLimitDrive);
-    this.encoder = motor.getEncoder();
-    this.singleMotorPID = motor.getPIDController();
-    configPID();
-  }
+    this.motor = new SparkMax(9, MotorType.kBrushless);
+    configMotor = new SparkMaxConfig();
 
-  private void configPID(){
-    singleMotorPID.setP(0.001);
-    singleMotorPID.setI(0);
-    singleMotorPID.setD(0);
-    singleMotorPID.setFF(0);
-    //encoder.setPositionConversionFactor(0.);
-    encoder.setVelocityConversionFactor(1);
+    configMotor
+      .smartCurrentLimit(OperatorConstants.AMPLimitDrive);
+    configMotor.encoder
+      .velocityConversionFactor(1);
+    configMotor.closedLoop
+      .pidf(0.001, 0, 0, 0);
     
- 
+    this.encoder = motor.getEncoder();
+    this.singleMotorPID = motor.getClosedLoopController();
 
+    motor.configure(configMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
+
+
   /**
    * Example command factory method.
    *
@@ -67,7 +76,7 @@ public class SingleWheel extends SubsystemBase {
         () -> {
           SmartDashboard.putNumber("velocity", encoder.getVelocity());
           System.out.println(encoder.getVelocity() + "velocity");
-          singleMotorPID.setReference(300/0.84, CANSparkBase.ControlType.kVelocity);
+          singleMotorPID.setReference(300/0.84, SparkBase.ControlType.kVelocity);
         });
   }
 

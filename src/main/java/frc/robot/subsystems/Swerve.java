@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import java.util.function.DoubleSupplier;
 
 import com.studica.frc.AHRS;
+import com.studica.frc.AHRS.NavXComType;
 import com.studica.frc.jni.AHRSJNI;
 
 
@@ -18,7 +19,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
-import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OperatorConstants;
@@ -61,7 +63,7 @@ public class Swerve extends SubsystemBase {
   
   // ***
   //AHRS gyro = new AHRS(SPI.Port.kMXP);
-  AHRS gyro = new AHRS(Port.kMXP);
+  AHRS gyro = new AHRS(NavXComType.kMXP_SPI);
   double yawOffset = 0;
 
   // ***
@@ -93,16 +95,16 @@ public class Swerve extends SubsystemBase {
 
   /** Creates a new ExampleSubsystem. */
   private final SwerveModule frontRightModule = new SwerveModule(
-    OperatorConstants.frontRightDriveCANID, OperatorConstants.frontRightSteeringCANID, OperatorConstants.frontRightAbsoluteEncoderPort, OperatorConstants.frontRightAbsoluteEncoderOffset, OperatorConstants.frontRightDriveInvert, OperatorConstants.frontRightSteeringInvert);
+    OperatorConstants.frontRightDriveCANID, OperatorConstants.frontRightSteeringCANID, OperatorConstants.frontRightAbsoluteEncoderPort, OperatorConstants.frontRightAbsoluteEncoderOffset, OperatorConstants.frontRightDriveInvert, OperatorConstants.frontRightSteeringInvert, "frontRight");
   
   private final SwerveModule frontLeftModule = new SwerveModule(
-    OperatorConstants.frontLeftDriveCANID, OperatorConstants.frontLeftSteeringCANID, OperatorConstants.frontLeftAbsoluteEncoderPort, OperatorConstants.frontLeftAbsoluteEncoderOffset, OperatorConstants.frontLeftDriveInvert, OperatorConstants.frontLeftSteeringInvert);
+    OperatorConstants.frontLeftDriveCANID, OperatorConstants.frontLeftSteeringCANID, OperatorConstants.frontLeftAbsoluteEncoderPort, OperatorConstants.frontLeftAbsoluteEncoderOffset, OperatorConstants.frontLeftDriveInvert, OperatorConstants.frontLeftSteeringInvert, "frontLeft");
   
   private final SwerveModule backRightModule = new SwerveModule(
-    OperatorConstants.backRightDriveCANID, OperatorConstants.backRightSteeringCANID, OperatorConstants.backRightAbsoluteEncoderPort, OperatorConstants.backRightAbsoluteEncoderOffset, OperatorConstants.backRightDriveInvert, OperatorConstants.backRightSteeringInvert);
+    OperatorConstants.backRightDriveCANID, OperatorConstants.backRightSteeringCANID, OperatorConstants.backRightAbsoluteEncoderPort, OperatorConstants.backRightAbsoluteEncoderOffset, OperatorConstants.backRightDriveInvert, OperatorConstants.backRightSteeringInvert, "backRight");
   
   private final SwerveModule backLeftModule = new SwerveModule(
-    OperatorConstants.backLeftDriveCANID, OperatorConstants.backLeftSteeringCANID, OperatorConstants.backLeftAbsoluteEncoderPort, OperatorConstants.backLeftAbsoluteEncoderOffset, OperatorConstants.backLeftDriveInvert, OperatorConstants.backLeftSteeringInvert);
+    OperatorConstants.backLeftDriveCANID, OperatorConstants.backLeftSteeringCANID, OperatorConstants.backLeftAbsoluteEncoderPort, OperatorConstants.backLeftAbsoluteEncoderOffset, OperatorConstants.backLeftDriveInvert, OperatorConstants.backLeftSteeringInvert, "backLeft");
 
 
   public Swerve() {
@@ -195,9 +197,17 @@ public class Swerve extends SubsystemBase {
       } */
       //
       backRightModule.drive(backRightSpeed, backRightAngle);
+      SmartDashboard.putNumber("B R abs", backRightModule.returnAbsEncoder());
+      SmartDashboard.putNumber("B R rel", backRightModule.returnTwistEncoder());
       backLeftModule.drive(backLeftSpeed, backLeftAngle);
+      SmartDashboard.putNumber("B L abs", backLeftModule.returnAbsEncoder());
+      SmartDashboard.putNumber("B L rel", backLeftModule.returnTwistEncoder());
       frontRightModule.drive(frontRightSpeed, frontRightAngle);
+      SmartDashboard.putNumber("F R abs", frontRightModule.returnAbsEncoder());
+      SmartDashboard.putNumber("F R rel", frontRightModule.returnTwistEncoder());
       frontLeftModule.drive(frontLeftSpeed, frontLeftAngle);
+      SmartDashboard.putNumber("F L abs", frontLeftModule.returnAbsEncoder());
+      SmartDashboard.putNumber("F L rel", frontLeftModule.returnTwistEncoder());
 
   }
 

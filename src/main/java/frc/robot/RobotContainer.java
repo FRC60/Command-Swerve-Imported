@@ -64,11 +64,11 @@ public class RobotContainer {
         () -> joystick.getRawAxis(1)*0.5, () -> joystick.getRawAxis(2)* 0.5)
     );*/
     System.out.println("configurebindings");
-    //swerveDrive.setDefaultCommand(
-      //swerveDrive.driveTeleop(() -> -xboxController.getLeftY(), () -> xboxController.getLeftX(), () -> xboxController.getRightX()));
-    motor.setDefaultCommand(
+    swerveDrive.setDefaultCommand(
+      swerveDrive.driveTeleop(() -> -xboxController.getLeftY(), () -> xboxController.getLeftX(), () -> xboxController.getRightX()));
+    /*motor.setDefaultCommand(
       motor.exampleMethodCommand(() -> -xboxController.getRightTriggerAxis()));
-    
+    */
   }
 
   public void setEncoderOffsets(){
