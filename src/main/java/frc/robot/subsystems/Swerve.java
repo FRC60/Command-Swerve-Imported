@@ -246,6 +246,10 @@ public class Swerve extends SubsystemBase {
       }
       
       //drive(forwardDT, sidewaysDT, turningDT);
+      System.out.println("forwardDT: " + forwardDT);
+      System.out.println("sidewaysDT: " + sidewaysDT);
+      System.out.println("turningDT: " + turningDT);
+
       drive(applySensitivity(forwardDT, OperatorConstants.sensitivity), applySensitivity(sidewaysDT, OperatorConstants.sensitivity), applySensitivity(turningDT, OperatorConstants.sensitivity));
     });
 

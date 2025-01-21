@@ -65,8 +65,9 @@ public final class Constants {
     public static final double backRightAbsoluteEncoderOffset = -0.257 * 360;
 
     // PID constants
-    //public static final double twistMotorP = 0.005;
-    public static final double twistMotorP = 0.5;
+    public static final double twistMotorP = 0.005;
+    //public static final double twistMotorP = 0.5;
+    //public static final double twistMotorP = 0;
     public static final double twistMotorI = 0;
     public static final double twistMotorD = 0;
     public static final double twistMotorFF = 0;
@@ -75,10 +76,12 @@ public final class Constants {
     //0.0004;
     //public static final double driveMotorP = 0.0003;
     public static final double driveMotorP = 0.0001;
+    //public static final double driveMotorP = 0;
     public static final double driveMotorI = 0;
     public static final double driveMotorD = 0;
     //public static final double driveMotorFF = 0.00009;
-    public static final double driveMotorFF = 0.;
+    //public static final double driveMotorFF = 0;
+    public static final double driveMotorFF = 1/473;
     
 
     // Sensitivity

@@ -17,6 +17,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
@@ -73,15 +74,9 @@ public class SwerveModule extends SubsystemBase {
   /** Creates a new ExampleSubsystem. */
   public SwerveModule(int driveMotorCANID, int twistMotorCANID, int absoluteTwistEncoderPort, double absoluteEncoderOffset, boolean driveInvert, boolean twistInvert, String moduleName) {
     name = moduleName;
-    //Drive Motor
-    this.driveMotor = new SparkMax(driveMotorCANID, MotorType.kBrushless);
- 
-    this.driveMotorPIDController = driveMotor.getClosedLoopController();
-    //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
 
-    // relative drive encoder
-    this.relativeDriveEncoder = driveMotor.getEncoder(); 
-    
+    //Drive Motor
+    driveMotor = new SparkMax(driveMotorCANID, MotorType.kBrushless);
 
     configDriveMotor = new SparkMaxConfig();
     configDriveMotor
@@ -92,18 +87,21 @@ public class SwerveModule extends SubsystemBase {
       .velocityConversionFactor(OperatorConstants.driveMotorVelocityFactor);
    
     configDriveMotor.closedLoop
-      .pidf(absoluteTwistEncoderPort, twistMotorCANID, absoluteTwistEncoderPort, absoluteEncoderOffset);
+      .pidf(OperatorConstants.driveMotorP, OperatorConstants.driveMotorI, OperatorConstants.driveMotorD, OperatorConstants.driveMotorFF);
+
+    driveMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    this.driveMotorPIDController = driveMotor.getClosedLoopController();
+    //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
+
+    // relative drive encoder
+    this.relativeDriveEncoder = driveMotor.getEncoder(); 
 
 
-      
 
     // Twist Motor
-    this.twistMotor = new SparkMax(twistMotorCANID, MotorType.kBrushless);
-    configTwistMotor = new SparkMaxConfig();
-
-    // relative twist encoder
-    this.relativeTwistEncoder = twistMotor.getEncoder();
-    this.twistMotorPIDCOntroller = twistMotor.getClosedLoopController();
+    twistMotor = new SparkMax(twistMotorCANID, MotorType.kBrushless);
+    configTwistMotor = new SparkMaxConfig();  
 
     configTwistMotor
       .inverted(twistInvert)
@@ -115,9 +113,14 @@ public class SwerveModule extends SubsystemBase {
       .positionWrappingEnabled(true)
       .positionWrappingInputRange(-180, 180);
 
+    twistMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    //TODO call the configure thing above^
     
     
-    
+    // relative twist encoder
+    this.relativeTwistEncoder = twistMotor.getEncoder();
+    this.twistMotorPIDCOntroller = twistMotor.getClosedLoopController();
+
     // absolute twist encoder
     this.absoluteTwistEncoder = new DutyCycleEncoder(absoluteTwistEncoderPort);
     //absoluteTwistEncoder.setDistancePerRotation(absoluteTwistEncoderPort);
