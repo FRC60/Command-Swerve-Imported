@@ -86,6 +86,7 @@ public final class Constants {
 
     // Sensitivity
     public static final double sensitivity = 3;
+    public static final double turningSensitivity = 2;
 
   }
 }

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 /**
@@ -30,7 +32,6 @@ public class RobotContainer {
   private final Swerve swerveDrive = new Swerve();
   private final SingleWheel motor = new SingleWheel();
   
-
   // xbox controller
   private final CommandXboxController xboxController =
       new CommandXboxController(OperatorConstants.kDriverControllerPort);
@@ -51,10 +52,16 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+
     // Schedule `ExampleCommand` when `exampleCondition` changes to `true`
     new Trigger(m_exampleSubsystem::exampleCondition)
         .onTrue(new ExampleCommand(m_exampleSubsystem));
-
+        
+    new Trigger(() -> DriverStation.isDisabled())
+        .onTrue(swerveDrive.setDesiredYawCommand());
+    
+    //m_driverController.y().onTrue(swerveDrive.setDesiredYawCommand(0));
+    //m_driverController.y().onTrue(m_intake.retractCommand());
     // Schedule `exampleMethodCommand` when the Xbox controller's B button is pressed,
     // cancelling on release.
     //m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
@@ -66,6 +73,7 @@ public class RobotContainer {
     System.out.println("configurebindings");
     swerveDrive.setDefaultCommand(
       swerveDrive.driveTeleop(() -> -xboxController.getLeftY(), () -> xboxController.getLeftX(), () -> xboxController.getRightX()));
+    
     /*motor.setDefaultCommand(
       motor.exampleMethodCommand(() -> -xboxController.getRightTriggerAxis()));
     */

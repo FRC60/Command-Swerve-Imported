@@ -87,9 +87,12 @@ public class SwerveModule extends SubsystemBase {
       .velocityConversionFactor(OperatorConstants.driveMotorVelocityFactor);
    
     configDriveMotor.closedLoop
-      .pidf(OperatorConstants.driveMotorP, OperatorConstants.driveMotorI, OperatorConstants.driveMotorD, OperatorConstants.driveMotorFF);
+      .pidf(OperatorConstants.driveMotorP, OperatorConstants.driveMotorI, OperatorConstants.driveMotorD, OperatorConstants.driveMotorFF)
+      .maxMotion
+      .maxAcceleration(5000)
+      .allowedClosedLoopError(500);
 
-    driveMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    //driveMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     this.driveMotorPIDController = driveMotor.getClosedLoopController();
     //driveMotorPIDCOntroller.setSmartMotionAllowedClosedLoopError(absoluteEncoderOffset);
@@ -113,7 +116,7 @@ public class SwerveModule extends SubsystemBase {
       .positionWrappingEnabled(true)
       .positionWrappingInputRange(-180, 180);
 
-    twistMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    //twistMotor.configure(configDriveMotor, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     //TODO call the configure thing above^
     
     
@@ -151,23 +154,30 @@ public class SwerveModule extends SubsystemBase {
   }
 
   double speedToRPM(double speed){
-    return speed * 5000;
+    if(Math.abs(speed) < 0.05){
+      return 0;
+    } else{
+      return speed * 5000;
+    }
+    
   }
 
   public void drive (double speed, double angle){
     //angleEncoder.getVelocity()
     double desiredModRPM = speedToRPM(speed);
+    double velocity = relativeDriveEncoder.getVelocity();
+    SmartDashboard.putNumber("actual RPM", velocity);
     if(speed!= 0){
-      double velocity = relativeDriveEncoder.getVelocity();
-      System.out.println(speed + "speed");
+ 
+      /* System.out.println(speed + "speed");
       SmartDashboard.putNumber("speed", speed);
       System.out.println(desiredModRPM + "DesiredRPM");
       SmartDashboard.putNumber("desiredModRPM", desiredModRPM);
       //System.out.println(RPMToMetersPerSecond(desiredModRPM)+" m/sec");
       System.out.println(velocity);
-      SmartDashboard.putNumber("actual RPM", velocity);
+
       SmartDashboard.putNumber("Error", desiredModRPM-velocity);
-      System.out.println("");
+      System.out.println(""); */
     }
     
     double currentAngle = relativeTwistEncoder.getPosition();
@@ -181,36 +191,48 @@ public class SwerveModule extends SubsystemBase {
     if (Math.abs(setPointAngle) < Math.abs(setPointAngleFlipped)){
       if (Math.abs(speed) < 0.1){
         //twistMotor.set(1);
+          System.out.println("Twist" + currentAngle);
           twistMotorPIDCOntroller.setReference(currentAngle, SparkMax.ControlType.kPosition);
-          System.out.println(name + currentAngle + "_"+ twistMotor.getOutputCurrent());
+          /* System.out.println(name + currentAngle + "_"+ twistMotor.getOutputCurrent());
           System.out.println(twistMotor.getOutputCurrent());
-          System.out.println("speed small");
+          System.out.println("speed small"); */
           //driveMotor.set(speed);
-          driveMotorPIDController.setReference(desiredModRPM/RPMToPID, SparkBase.ControlType.kVelocity);
+          System.out.println(name + desiredModRPM/RPMToPID);
+          //driveMotorPIDController.setReference(desiredModRPM/RPMToPID, SparkBase.ControlType.kVelocity);
+          driveMotorPIDController.setReference(desiredModRPM/RPMToPID, SparkBase.ControlType.kMAXMotionVelocityControl);
+          
+          
+          
       } else {
         //twistMotor.set(1);
+          System.out.println("Twist" + angleSubtractor(currentAngle, setPointAngle));
           twistMotorPIDCOntroller.setReference(angleSubtractor(currentAngle, setPointAngle), SparkMax.ControlType.kPosition);
-          System.out.println(name + angleSubtractor(currentAngle, setPointAngle) + " "+ twistMotor.getOutputCurrent());
-          System.out.println(twistMotor.getOutputCurrent());
+          /* System.out.println(name + angleSubtractor(currentAngle, setPointAngle) + " "+ twistMotor.getOutputCurrent());
+          System.out.println(twistMotor.getOutputCurrent()); */
           //driveMotor.set(speed);
+          System.out.println(name + desiredModRPM/RPMToPID);
           driveMotorPIDController.setReference(desiredModRPM/RPMToPID, SparkBase.ControlType.kVelocity);
       }
     } else {
       //System.out.println("flipped angle is smaller or equal");
       if (Math.abs(speed) < 0.1){
         //twistMotor.set(1);
+        System.out.println("Twist" + currentAngle);
           twistMotorPIDCOntroller.setReference(currentAngle, SparkMax.ControlType.kPosition);
-          System.out.println(name + currentAngle + " "+ twistMotor.getOutputCurrent());
+          /* System.out.println(name + currentAngle + " "+ twistMotor.getOutputCurrent());
           System.out.println(twistMotor.getOutputCurrent());
-          System.out.println("speed small");
+          System.out.println("speed small"); */
           //driveMotor.set(-1 * speed);
+          System.out.println(name + -desiredModRPM/RPMToPID);
           driveMotorPIDController.setReference(-desiredModRPM/RPMToPID, SparkBase.ControlType.kVelocity);
       } else {
         //twistMotor.set(1);
+        System.out.println("Twist" + angleSubtractor(currentAngle, setPointAngleFlipped));
           twistMotorPIDCOntroller.setReference(angleSubtractor(currentAngle, setPointAngleFlipped), SparkMax.ControlType.kPosition);
-          System.out.println(name + angleSubtractor(currentAngle, setPointAngleFlipped) + " " +twistMotor.getOutputCurrent());
-          System.out.println(twistMotor.getOutputCurrent());
+  /*         System.out.println(name + angleSubtractor(currentAngle, setPointAngleFlipped) + " " +twistMotor.getOutputCurrent());
+          System.out.println(twistMotor.getOutputCurrent()); */
           //driveMotor.set(-1 * speed);
+          System.out.println(name + -desiredModRPM/RPMToPID);
           driveMotorPIDController.setReference(-desiredModRPM/RPMToPID, SparkBase.ControlType.kVelocity);
       }
     } 

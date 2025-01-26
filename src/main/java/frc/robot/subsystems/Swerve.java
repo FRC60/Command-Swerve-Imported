@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.OperatorConstants;
 
@@ -222,7 +223,10 @@ public class Swerve extends SubsystemBase {
           if (YawError >= -3 && YawError <= 3) {
               YawError = 0;
           }
-          turningDT = coerceToRange((YawError) * 0.010, -1, 1);
+          //turningDT = coerceToRange((YawError) * 0.010, -1, 1);
+          //turningDT = coerceToRange((YawError) * 0.02, -1, 1);
+          turningDT = coerceToRange((YawError) * 0.005, -1, 1);
+
           // 0.020
       } else {
           desiredYaw = getGyroRobotYaw() + (turningDT * 10);
@@ -230,9 +234,13 @@ public class Swerve extends SubsystemBase {
           if (YawError >= -2 && YawError <= 2) {
               YawError = 0;
           }
-          turningDT = coerceToRange((YawError) * 0.07, -1, 1);
+          //turningDT = coerceToRange((YawError) * 0.07, -1, 1);
+          //turningDT = coerceToRange((YawError) * 0.05, -1, 1);
+          turningDT = coerceToRange((YawError) * 0.005, -1, 1);
       }
-
+      SmartDashboard.putNumber("desiredYaw", desiredYaw);
+      SmartDashboard.putNumber("currentYaw", getGyroRobotYaw());
+      SmartDashboard.putNumber("YawError", YawError);
       if (forwardDT >= -0.01 && forwardDT <= 0.01) {
           forwardDT = 0;
       } else {
@@ -250,7 +258,7 @@ public class Swerve extends SubsystemBase {
       System.out.println("sidewaysDT: " + sidewaysDT);
       System.out.println("turningDT: " + turningDT);
 
-      drive(applySensitivity(forwardDT, OperatorConstants.sensitivity), applySensitivity(sidewaysDT, OperatorConstants.sensitivity), applySensitivity(turningDT, OperatorConstants.sensitivity));
+      drive(applySensitivity(forwardDT, OperatorConstants.sensitivity), applySensitivity(sidewaysDT, OperatorConstants.sensitivity), turningDT);
     });
 
   }
@@ -264,6 +272,10 @@ public class Swerve extends SubsystemBase {
 
   }
 
+  public void setDesiredYaw(double value){
+    desiredYaw = value;
+  }
+
 
   /**
    * Example command factory method.
@@ -275,6 +287,18 @@ public class Swerve extends SubsystemBase {
     // Subsystem::RunOnce implicitly requires `this` subsystem.
     return runOnce(
         () -> {
+          /* one-time action goes here */
+        });
+  }
+
+  public Command setDesiredYawCommand() {
+    // Inline construction of command goes here.
+    // Subsystem::RunOnce implicitly requires `this` subsystem.
+    //.ignoringDisable(true);
+    return runOnce(
+        () -> {
+          desiredYaw = getGyroRobotYaw();
+          System.out.println("disabledYawReset");
           /* one-time action goes here */
         });
   }
