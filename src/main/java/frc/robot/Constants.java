@@ -75,10 +75,11 @@ public final class Constants {
     // PID constants
     //0.0004;
     //public static final double driveMotorP = 0.0003;
-    public static final double driveMotorP = 0.0001;
+    //public static final double driveMotorP = 0.0001;
+    public static final double driveMotorP = 0.0005;
     //public static final double driveMotorP = 0;
     public static final double driveMotorI = 0;
-    public static final double driveMotorD = 0;
+    public static final double driveMotorD = 0.0015;
     //public static final double driveMotorFF = 0.00009;
     //public static final double driveMotorFF = 0;
     public static final double driveMotorFF = 1/473;
