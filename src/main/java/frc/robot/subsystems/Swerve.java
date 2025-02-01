@@ -258,6 +258,9 @@ public class Swerve extends SubsystemBase {
       System.out.println("sidewaysDT: " + sidewaysDT);
       System.out.println("turningDT: " + turningDT);
 
+      System.out.println("SforwardDT: " + applySensitivity(forwardDT, OperatorConstants.sensitivity));
+      System.out.println("SsidewaysDT: " + applySensitivity(sidewaysDT, OperatorConstants.sensitivity));
+
       drive(applySensitivity(forwardDT, OperatorConstants.sensitivity), applySensitivity(sidewaysDT, OperatorConstants.sensitivity), turningDT);
     });
 
